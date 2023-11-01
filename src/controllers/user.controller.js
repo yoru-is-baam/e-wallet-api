@@ -58,7 +58,7 @@ const getUsers = async (req, res) => {
 		.json({ status: "success", nbHits: users.length, users });
 };
 
-const getProfile = async (req, res) => {
+const getUser = async (req, res) => {
 	let user = await User.findById(req.params.id);
 
 	if (!user) {
@@ -267,7 +267,7 @@ const removeID = async (req, res) => {
 
 module.exports = {
 	getUsers,
-	getProfile,
+	getUser,
 	unlockBlockedAccount,
 	activateAccount,
 	changePassword,
