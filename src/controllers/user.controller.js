@@ -135,13 +135,13 @@ const resetPasswordPost = async (req, res) => {
 		`<p>${user.otp}</p>`
 	);
 
-	const oneDay = 1000 * 60 * 60 * 24;
+	const ONE_DAY = 1000 * 60 * 60 * 24;
 	attachCookiesToResponse({
 		res,
 		cookie: {
 			key: "user",
 			value: { email, status: "Enter OTP" },
-			time: oneDay,
+			lifetime: ONE_DAY,
 		},
 	});
 
@@ -168,13 +168,13 @@ const enterOTP = async (req, res) => {
 	await user.save();
 
 	// keep track reset status
-	const oneDay = 1000 * 60 * 60 * 24;
+	const ONE_DAY = 1000 * 60 * 60 * 24;
 	attachCookiesToResponse({
 		res,
 		cookie: {
 			key: "user",
 			value: { email, status: "Reset password" },
-			time: oneDay,
+			lifetime: ONE_DAY,
 		},
 	});
 
@@ -198,10 +198,11 @@ const resetPasswordPatch = async (req, res) => {
 	await user.save();
 
 	// remove status cookie
-	res.cookie("user", "", {
-		httpOnly: true,
-		expires: new Date(Date.now() + 1000),
-	});
+	res.clearCookie("user");
+	// res.cookie("user", "", {
+	// 	httpOnly: true,
+	// 	expires: new Date(Date.now() + 1000),
+	// });
 
 	res
 		.status(StatusCodes.OK)

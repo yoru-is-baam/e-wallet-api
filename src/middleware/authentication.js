@@ -2,14 +2,21 @@ const CustomError = require("../errors");
 const { isTokenValid } = require("../utils");
 
 const authenticateUser = async (req, res, next) => {
-	const token = req.signedCookies.token;
+	let accessToken;
+	const authHeader = req.headers.authorization;
+	if (authHeader && authHeader.startsWith("Bearer ")) {
+		accessToken = authHeader.split(" ")[1];
+	}
 
-	if (!token) {
+	if (!accessToken) {
 		throw new CustomError.UnauthenticatedError("Authentication Invalid");
 	}
 
 	try {
-		const { name, userId, status, role } = isTokenValid({ token });
+		const { name, userId, status, role } = isTokenValid(
+			accessToken,
+			"accessToken"
+		);
 		req.user = { name, userId, status, role };
 		next();
 	} catch (error) {

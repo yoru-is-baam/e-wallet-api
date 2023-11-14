@@ -15,7 +15,7 @@ const errorHandlerMiddleware = require("./middleware/error-handler");
 
 app.use(morgan("dev"));
 app.use(express.json());
-app.use(cookieParser(process.env.JWT_SECRET));
+app.use(cookieParser(process.env.COOKIE_SECRET));
 
 app.use((req, res, next) => {
 	req.vars = { root: __dirname }; // __dirname is current folder

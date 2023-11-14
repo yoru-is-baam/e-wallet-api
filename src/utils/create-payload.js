@@ -1,4 +1,4 @@
-const createTokenUser = (user) => {
+const createPayload = (user) => {
 	return {
 		name: user.role === "admin" ? "admin" : user.profile.name,
 		userId: user._id,
@@ -7,4 +7,4 @@ const createTokenUser = (user) => {
 	};
 };
 
-module.exports = createTokenUser;
+module.exports = createPayload;

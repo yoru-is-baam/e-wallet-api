@@ -6,12 +6,12 @@ const {
 	createJWT,
 	generateRandomString,
 	generateUsername,
-	createTokenUser,
+	createPayload,
 	attachCookiesToResponse,
+	isTokenValid,
 } = require("../utils");
 
-const MailService = require("../services/mail.service");
-const mailService = MailService.getInstance();
+const mailService = require("../services/mail.service").getInstance();
 
 const register = async (req, res) => {
 	const { email, phone, name, birth, address } = req.body;
@@ -53,15 +53,12 @@ const register = async (req, res) => {
 	);
 
 	// jwt & cookies
-	const payload = createTokenUser(user);
-	const token = createJWT(payload);
-	const oneDay = 1000 * 60 * 60 * 24;
-	attachCookiesToResponse({
-		res,
-		cookie: { key: "token", value: token, time: oneDay },
-	});
+	const payload = createPayload(user);
+	const accessToken = createJWT(payload, "accessToken");
 
-	res.status(StatusCodes.CREATED).json({ user: payload });
+	res
+		.status(StatusCodes.CREATED)
+		.json({ status: "success", user: payload, accessToken });
 };
 
 const login = async (req, res) => {
@@ -105,26 +102,71 @@ const login = async (req, res) => {
 	}
 
 	// jwt & cookies
-	const payload = createTokenUser(user);
-	const token = createJWT(payload);
-	const oneDay = 1000 * 60 * 60 * 24;
+	const payload = createPayload(user);
+	const accessToken = createJWT(payload, "accessToken");
+	const refreshToken = createJWT(payload, "refreshToken");
 	attachCookiesToResponse({
 		res,
-		cookie: { key: "token", value: token, time: oneDay },
+		cookie: { key: "refreshToken", value: refreshToken },
 	});
 
-	res.status(StatusCodes.OK).json({ status: "success", user: payload });
+	user.refreshToken = refreshToken;
+	await user.save();
+
+	res
+		.status(StatusCodes.OK)
+		.json({ status: "success", user: payload, accessToken });
 };
 
 const logout = async (req, res) => {
-	res.cookie("token", "logout", {
-		httpOnly: true,
-		expires: new Date(Date.now() + 1000),
-	});
+	const refreshToken = req.signedCookies?.refreshToken;
+	await User.findOneAndUpdate({ refreshToken }, { refreshToken: null });
+
+	res.clearCookie("refreshToken");
 
 	res
 		.status(StatusCodes.OK)
 		.json({ status: "success", message: "user logged out!" });
 };
 
-module.exports = { register, login, logout };
+const refreshToken = async (req, res) => {
+	const refreshToken = req.signedCookies?.refreshToken;
+	if (!refreshToken) {
+		throw new CustomError.UnauthenticatedError("Authentication Invalid");
+	}
+
+	const user = await User.findOne({ refreshToken });
+	if (!user) {
+		throw new CustomError.UnauthenticatedError(
+			"No user found with this refresh token"
+		);
+	}
+
+	try {
+		const { userId, name, status, role } = isTokenValid(
+			refreshToken,
+			"refreshToken"
+		);
+		const payload = { userId, name, status, role };
+		const newAccessToken = createJWT(payload, "accessToken");
+		const newRefreshToken = createJWT(payload, "refreshToken");
+		attachCookiesToResponse({
+			res,
+			cookie: { key: "refreshToken", value: newRefreshToken },
+		});
+
+		user.refreshToken = newRefreshToken;
+		await user.save();
+
+		res
+			.status(StatusCodes.OK)
+			.json({ status: "success", accessToken: newAccessToken });
+	} catch (error) {
+		await User.findOneAndUpdate({ refreshToken }, { refreshToken: null });
+		res.clearCookie("refreshToken");
+
+		throw new CustomError.UnauthenticatedError("Authentication Invalid");
+	}
+};
+
+module.exports = { register, login, logout, refreshToken };

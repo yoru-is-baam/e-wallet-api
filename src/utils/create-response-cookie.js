@@ -1,10 +1,16 @@
 const attachCookiesToResponse = ({ res, cookie }) => {
-	res.cookie(cookie.key, cookie.value, {
+	const options = {
 		httpOnly: true,
-		expires: new Date(Date.now() + cookie.time),
 		secure: process.env.NODE_ENV === "production",
 		signed: true,
-	});
+		sameSite: "strict",
+	};
+
+	if (cookie.lifetime) {
+		options.maxAge = cookie.lifetime;
+	}
+
+	res.cookie(cookie.key, cookie.value, options);
 };
 
 module.exports = attachCookiesToResponse;
