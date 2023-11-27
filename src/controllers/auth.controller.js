@@ -16,13 +16,14 @@ const mailService = require("../services/mail.service").getInstance();
 const register = async (req, res) => {
 	const { email, phone, name, birth, address } = req.body;
 
-	const emailOrPhoneAlreadyExists = await User.findOne({
+	const emailOrPhoneAlreadyExists = await User.exists({
 		$or: [{ profile: { email } }, { profile: { phone } }],
 	});
 	if (emailOrPhoneAlreadyExists) {
-		throw new CustomError.BadRequestError(
-			"Email or phone number already exists"
-		);
+		throw new CustomError.BadRequestError("ValidationError", {
+			email: "email or phone number already exists",
+			phone: "email or phone number already exists",
+		});
 	}
 
 	// create user account
@@ -58,7 +59,7 @@ const register = async (req, res) => {
 
 	res
 		.status(StatusCodes.CREATED)
-		.json({ status: "success", user: payload, accessToken });
+		.json({ status: "success", data: { user: payload, accessToken } });
 };
 
 const login = async (req, res) => {
@@ -66,7 +67,9 @@ const login = async (req, res) => {
 
 	const user = await User.findOne({ username });
 	if (!user) {
-		throw new CustomError.UnauthenticatedError("username is invalid");
+		throw new CustomError.UnauthenticatedError("ValidationError", {
+			username: "username is invalid",
+		});
 	}
 
 	// admin will not be checked this
@@ -79,10 +82,14 @@ const login = async (req, res) => {
 
 		if (user.wrongCount >= FIRST_WRONG_LIMIT && blockedTime < ONE_MINUTE) {
 			throw new CustomError.UnauthorizedError(
+				"PermissionError",
+				null,
 				"Your account is blocked, please try again after 1 minute"
 			);
 		} else if (user.wrongCount >= SECOND_WRONG_LIMIT && user.unusualLogin) {
 			throw new CustomError.UnauthorizedError(
+				"PermissionError",
+				null,
 				"Your account is blocked because wrong many times, please contact administrator"
 			);
 		}
@@ -115,7 +122,7 @@ const login = async (req, res) => {
 
 	res
 		.status(StatusCodes.OK)
-		.json({ status: "success", user: payload, accessToken });
+		.json({ status: "success", data: { user: payload, accessToken } });
 };
 
 const logout = async (req, res) => {
@@ -124,20 +131,24 @@ const logout = async (req, res) => {
 
 	res.clearCookie("refreshToken");
 
-	res
-		.status(StatusCodes.OK)
-		.json({ status: "success", message: "user logged out!" });
+	res.status(StatusCodes.OK).json({ status: "success", data: null });
 };
 
 const refreshToken = async (req, res) => {
 	const refreshToken = req.signedCookies?.refreshToken;
 	if (!refreshToken) {
-		throw new CustomError.UnauthenticatedError("Authentication Invalid");
+		throw new CustomError.UnauthenticatedError(
+			"TokenError",
+			null,
+			"No refresh token found"
+		);
 	}
 
-	const user = await User.findOne({ refreshToken });
-	if (!user) {
+	const isUserExisted = await User.exists({ refreshToken });
+	if (!isUserExisted) {
 		throw new CustomError.UnauthenticatedError(
+			"TokenError",
+			null,
 			"No user found with this refresh token"
 		);
 	}
@@ -160,12 +171,16 @@ const refreshToken = async (req, res) => {
 
 		res
 			.status(StatusCodes.OK)
-			.json({ status: "success", accessToken: newAccessToken });
+			.json({ status: "success", data: { accessToken: newAccessToken } });
 	} catch (error) {
 		await User.findOneAndUpdate({ refreshToken }, { refreshToken: null });
 		res.clearCookie("refreshToken");
 
-		throw new CustomError.UnauthenticatedError("Authentication Invalid");
+		throw new CustomError.UnauthenticatedError(
+			"TokenExpiredError",
+			null,
+			"Invalid refresh token"
+		);
 	}
 };
 

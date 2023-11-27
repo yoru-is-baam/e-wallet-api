@@ -15,8 +15,40 @@ const registerSchema = Joi.object({
 });
 
 const loginSchema = Joi.object({
-	username: Joi.string().required().trim().strict(),
-	password: Joi.string().required().trim().strict(),
+	username: Joi.string()
+		.required()
+		.min(10)
+		.trim()
+		.strict()
+		.error((errors) => {
+			errors.forEach((err) => {
+				switch (err.code) {
+					case "string.min":
+						err.message = "username is invalid";
+						break;
+					default:
+						break;
+				}
+			});
+			return errors;
+		}),
+	password: Joi.string()
+		.required()
+		.min(6)
+		.trim()
+		.strict()
+		.error((errors) => {
+			errors.forEach((err) => {
+				switch (err.code) {
+					case "string.min":
+						err.message = "password is invalid";
+						break;
+					default:
+						break;
+				}
+			});
+			return errors;
+		}),
 });
 
 module.exports = {

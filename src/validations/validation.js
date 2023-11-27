@@ -9,8 +9,11 @@ const validationMiddleware = (schema) => (req, res, next) => {
 	if (!error) {
 		next();
 	} else {
-		const errMsg = error.details.map((item) => item.message).join(",");
-		throw new CustomError.BadRequestError(errMsg);
+		const fields = error.details.reduce((obj, item) => {
+			obj[item.context.key] = item.message;
+			return obj;
+		}, {});
+		throw new CustomError.BadRequestError("ValidationError", fields);
 	}
 };
 

@@ -1,32 +1,28 @@
 const { StatusCodes } = require("http-status-codes");
 
 const errorHandlerMiddleware = (err, req, res, next) => {
-	console.error(err);
+	const { name, fields, message, statusCode, value } = err;
 
-	let customError = {
-		// set default
-		statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
-		message: err.message || "Something went wrong try again later",
-		statusText: err.statusCode ? "fail" : "error",
-	};
-
-	if (err.name === "ValidationError") {
-		customError.message = Object.values(err.errors)
-			.map((item) => item.message)
-			.join(",");
-		customError.statusCode = StatusCodes.BAD_REQUEST;
-		customError.statusText = "fail";
+	if (name === "CastError") {
+		message = `Can not find with id: ${value}`;
+		statusCode = StatusCodes.NOT_FOUND;
 	}
 
-	if (err.name === "CastError") {
-		customError.message = `Can not find with id : ${err.value}`;
-		customError.statusCode = StatusCodes.NOT_FOUND;
-		customError.statusText = "fail";
+	if (statusCode) {
+		return res.status(statusCode).json({
+			status: "fail",
+			data: {
+				name,
+				fields,
+				message,
+			},
+		});
 	}
 
-	return res
-		.status(customError.statusCode)
-		.json({ status: customError.statusText, message: customError.message });
+	return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+		status: "error",
+		message: "Something went wrong try again later",
+	});
 };
 
 module.exports = errorHandlerMiddleware;
