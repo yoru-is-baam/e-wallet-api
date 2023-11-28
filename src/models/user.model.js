@@ -85,6 +85,33 @@ const UserSchema = mongoose.Schema(
 	{ timestamps: true }
 );
 
+/**
+ * Check if field is taken
+ * @param {string} field - Email or phone number or other fields
+ * @param {string} value - The user's email or phone number or other values
+ * @param {ObjectId} [excludeUserId] - The id of the user to be excluded
+ * @returns {Promise<boolean>}
+ */
+UserSchema.statics.isFieldTaken = async function (field, excludeUserId) {
+	let isTaken = null;
+	const [key, value] = Object.entries(field)[0];
+
+	if (key !== "email" && key !== "phone") {
+		isTaken = await this.exists({
+			[key]: value,
+			_id: { $ne: excludeUserId },
+		});
+	} else {
+		const fieldProfile = "profile." + [key];
+		isTaken = await this.exists({
+			[fieldProfile]: value,
+			_id: { $ne: excludeUserId },
+		});
+	}
+
+	return !!isTaken;
+};
+
 UserSchema.pre("save", async function (next) {
 	if (!this.isModified("password")) return;
 	const salt = await bcrypt.genSalt(10);
@@ -92,6 +119,11 @@ UserSchema.pre("save", async function (next) {
 	next();
 });
 
+/**
+ * Check if password matches the user's password
+ * @param {string} candidatePassword
+ * @returns {Promise<boolean>}
+ */
 UserSchema.methods.comparePassword = async function (candidatePassword) {
 	const isMatch = await bcrypt.compare(candidatePassword, this.password);
 	return isMatch;

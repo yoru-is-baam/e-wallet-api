@@ -1,5 +1,5 @@
 const createAdminAccount = async () => {
-	const User = require("../models/User");
+	const { User } = require("../models");
 
 	const user = await User.findOne({ username: "administrator" });
 

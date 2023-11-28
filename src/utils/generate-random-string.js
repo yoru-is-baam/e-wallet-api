@@ -19,15 +19,13 @@ function generateRandomStringWithPattern(chars, length) {
 	return randomString;
 }
 
-async function generateUsername() {
-	const User = require("../models/User");
-
+async function generateUsername(User) {
 	let username = "";
 	let isExisted = false;
 
 	do {
 		username = generateNumericalString(10);
-		isExisted = await User.exists({ username });
+		isExisted = await User.isFieldTaken("username", username);
 	} while (isExisted);
 
 	return username;

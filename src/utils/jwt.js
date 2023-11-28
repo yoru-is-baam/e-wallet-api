@@ -36,10 +36,12 @@ const verifyTokenStrategies = {
 	refreshToken: verifyRefreshToken,
 };
 
-const isTokenValid = (token, tokenType) =>
-	verifyTokenStrategies[tokenType](token);
+const verifyToken = (token) => {
+	const [key, value] = Object.entries(token)[0];
+	return verifyTokenStrategies[key](value);
+};
 
 module.exports = {
 	createJWT,
-	isTokenValid,
+	verifyToken,
 };

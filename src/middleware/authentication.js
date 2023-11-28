@@ -1,5 +1,5 @@
 const CustomError = require("../errors");
-const { isTokenValid } = require("../utils");
+const { verifyToken } = require("../utils");
 
 const authenticateUser = async (req, res, next) => {
 	let accessToken;
@@ -17,10 +17,7 @@ const authenticateUser = async (req, res, next) => {
 	}
 
 	try {
-		const { name, userId, status, role } = isTokenValid(
-			accessToken,
-			"accessToken"
-		);
+		const { name, userId, status, role } = verifyToken({ accessToken });
 		req.user = { name, userId, status, role };
 		next();
 	} catch (error) {

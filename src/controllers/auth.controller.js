@@ -1,56 +1,27 @@
-const User = require("../models/User");
-const Wallet = require("../models/Wallet");
+const {
+	userService,
+	walletService,
+	mailService,
+	authService,
+} = require("../services");
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
 const {
 	createJWT,
-	generateRandomString,
-	generateUsername,
 	createPayload,
+	verifyToken,
 	attachCookiesToResponse,
-	isTokenValid,
 } = require("../utils");
 
-const mailService = require("../services/mail.service").getInstance();
-
 const register = async (req, res) => {
-	const { email, phone, name, birth, address } = req.body;
-
-	const emailOrPhoneAlreadyExists = await User.exists({
-		$or: [{ profile: { email } }, { profile: { phone } }],
-	});
-	if (emailOrPhoneAlreadyExists) {
-		throw new CustomError.BadRequestError("ValidationError", {
-			email: "email or phone number already exists",
-			phone: "email or phone number already exists",
-		});
-	}
-
-	// create user account
-	const username = await generateUsername();
-	const password = generateRandomString(6);
-
-	const user = await User.create({
-		username,
-		password,
-		profile: {
-			phone,
-			email,
-			name,
-			birth,
-			address,
-		},
-	});
-
-	// create wallet
-	await Wallet.create({ userId: user._id });
+	const user = await userService.createUser(req.body);
+	await walletService.createWallet(user._id);
 
 	// send mail
 	mailService.sendEmail(
-		`Administrator 👻 <${process.env.EMAIL_ADMIN}>`,
-		email,
+		user.profile.email,
 		"Your account ✔",
-		`<p>Username: ${username}</p><p>Password: ${password}</p>`
+		`<p>Username: ${user.username}</p><p>Password: ${user.password}</p>`
 	);
 
 	// jwt & cookies
@@ -65,48 +36,10 @@ const register = async (req, res) => {
 const login = async (req, res) => {
 	const { username, password } = req.body;
 
-	const user = await User.findOne({ username });
-	if (!user) {
-		throw new CustomError.UnauthenticatedError("ValidationError", {
-			username: "username is invalid",
-		});
-	}
-
-	// admin will not be checked this
-	if (user.role === "user") {
-		const FIRST_WRONG_LIMIT = 3;
-		const SECOND_WRONG_LIMIT = 6;
-		const ONE_MINUTE = 60000;
-		const currentTime = Date.now();
-		const blockedTime = currentTime - user.blockedTime;
-
-		if (user.wrongCount >= FIRST_WRONG_LIMIT && blockedTime < ONE_MINUTE) {
-			throw new CustomError.UnauthorizedError(
-				"PermissionError",
-				null,
-				"Your account is blocked, please try again after 1 minute"
-			);
-		} else if (user.wrongCount >= SECOND_WRONG_LIMIT && user.unusualLogin) {
-			throw new CustomError.UnauthorizedError(
-				"PermissionError",
-				null,
-				"Your account is blocked because wrong many times, please contact administrator"
-			);
-		}
-	}
-
-	const isPasswordCorrect = await user.comparePassword(password);
-	if (!isPasswordCorrect) {
-		// admin will not be increased wrong count
-		if (user.role === "user") {
-			await user.updateWrongCount();
-		}
-
-		throw new CustomError.UnauthenticatedError("password is invalid");
-	} else if (user.wrongCount > 0) {
-		// If correct, then check wrong count and restore
-		await user.restoreLoginStatus();
-	}
+	const user = await authService.loginWithUsernameAndPassword(
+		username,
+		password
+	);
 
 	// jwt & cookies
 	const payload = createPayload(user);
@@ -117,8 +50,7 @@ const login = async (req, res) => {
 		cookie: { key: "refreshToken", value: refreshToken },
 	});
 
-	user.refreshToken = refreshToken;
-	await user.save();
+	await userService.updateRefreshToken({ username }, refreshToken);
 
 	res
 		.status(StatusCodes.OK)
@@ -127,11 +59,11 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
 	const refreshToken = req.signedCookies?.refreshToken;
-	await User.findOneAndUpdate({ refreshToken }, { refreshToken: null });
+	await userService.updateRefreshToken({ refreshToken }, null);
 
 	res.clearCookie("refreshToken");
 
-	res.status(StatusCodes.OK).json({ status: "success", data: null });
+	res.status(StatusCodes.NO_CONTENT).json({ status: "success", data: null });
 };
 
 const refreshToken = async (req, res) => {
@@ -144,8 +76,8 @@ const refreshToken = async (req, res) => {
 		);
 	}
 
-	const isUserExisted = await User.exists({ refreshToken });
-	if (!isUserExisted) {
+	const isExisted = await userService.checkFieldExistence(refreshToken);
+	if (!isExisted) {
 		throw new CustomError.UnauthenticatedError(
 			"TokenError",
 			null,
@@ -154,10 +86,7 @@ const refreshToken = async (req, res) => {
 	}
 
 	try {
-		const { userId, name, status, role } = isTokenValid(
-			refreshToken,
-			"refreshToken"
-		);
+		const { userId, name, status, role } = verifyToken({ refreshToken });
 		const payload = { userId, name, status, role };
 		const newAccessToken = createJWT(payload, "accessToken");
 		const newRefreshToken = createJWT(payload, "refreshToken");
@@ -166,14 +95,14 @@ const refreshToken = async (req, res) => {
 			cookie: { key: "refreshToken", value: newRefreshToken },
 		});
 
-		user.refreshToken = newRefreshToken;
-		await user.save();
+		await userService.updateRefreshToken({ refreshToken }, newRefreshToken);
 
 		res
 			.status(StatusCodes.OK)
 			.json({ status: "success", data: { accessToken: newAccessToken } });
 	} catch (error) {
-		await User.findOneAndUpdate({ refreshToken }, { refreshToken: null });
+		await userService.updateRefreshToken({ refreshToken }, null);
+
 		res.clearCookie("refreshToken");
 
 		throw new CustomError.UnauthenticatedError(

@@ -1,4 +1,4 @@
-const { createJWT, isTokenValid } = require("./jwt");
+const { createJWT, verifyToken } = require("./jwt");
 const {
 	generateUsername,
 	generateNumericalString,
@@ -13,9 +13,9 @@ module.exports = {
 	checkPermissions,
 	createAdminAccount,
 	createJWT,
-	isTokenValid,
-	attachCookiesToResponse,
+	verifyToken,
 	createPayload,
+	attachCookiesToResponse,
 	generateUsername,
 	generateNumericalString,
 	generateRandomString,

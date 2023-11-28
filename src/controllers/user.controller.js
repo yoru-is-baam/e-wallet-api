@@ -1,6 +1,5 @@
-const User = require("../models/User");
-const Wallet = require("../models/Wallet");
-
+const { User } = require("../models");
+const { mailService, userService, walletService } = require("../services");
 const {
 	checkPermissions,
 	attachCookiesToResponse,
@@ -12,46 +11,8 @@ const CustomError = require("../errors");
 
 const cloudinary = require("../configs/cloudinary.config");
 
-const MailService = require("../services/mail.service");
-const mailService = MailService.getInstance();
-
 const getUsers = async (req, res) => {
-	const { status, sort, wrongCount, unusualLogin } = req.query;
-	const queryObject = {};
-
-	if (status) {
-		queryObject.status = status;
-	}
-
-	if (wrongCount) {
-		queryObject.wrongCount = wrongCount;
-	}
-
-	if (unusualLogin) {
-		queryObject.unusualLogin = unusualLogin === "true" ? true : false;
-	}
-
-	// just get user
-	queryObject.role = "user";
-
-	let result = User.find(queryObject).select("-password -otp");
-
-	// sort (can re-use)
-	if (sort) {
-		const sortList = sort.split(",").join(" ");
-		result = result.sort(sortList);
-	} else {
-		result = result.sort("createdAt");
-	}
-
-	// pagination (can re-use)
-	const page = Number(req.query.page) || 1;
-	const limit = Number(req.query.limit) || 10;
-	const skip = (page - 1) * limit;
-
-	result = result.skip(skip).limit(limit);
-
-	const users = await result;
+	const users = await userService.getUsers(req.query);
 
 	res
 		.status(StatusCodes.OK)
@@ -59,8 +20,7 @@ const getUsers = async (req, res) => {
 };
 
 const getUser = async (req, res) => {
-	let user = await User.findById(req.params.id);
-
+	let user = await userService.getUserById(req.params.id);
 	if (!user) {
 		throw new CustomError.NotFoundError(
 			"ValueError",
@@ -72,7 +32,7 @@ const getUser = async (req, res) => {
 	checkPermissions(req.user, user._id);
 
 	// get wallet
-	const wallet = await Wallet.findOne({ userId: req.params.id });
+	const wallet = await walletService.getWalletByUserId(req.params.id);
 
 	// filter fields
 	user = { ...user.profile, status: user.status, balance: wallet.balance };
@@ -81,7 +41,7 @@ const getUser = async (req, res) => {
 };
 
 const unlockBlockedAccount = async (req, res) => {
-	const user = await User.findById(req.body.userId);
+	const user = await userService.getUserById(req.body.userId);
 
 	if (user) {
 		await user.restoreLoginStatus();

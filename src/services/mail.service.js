@@ -10,24 +10,19 @@ const transport = {
 		pass: PASS_ADMIN,
 	},
 };
+const transporter = nodemailer.createTransport(transport);
 
-class MailService {
-	constructor() {
-		this.transporter = nodemailer.createTransport(transport);
-	}
+/**
+ * Send an email
+ * @param {string} to
+ * @param {string} subject
+ * @param {string} html
+ * @returns {Promise}
+ */
+const sendEmail = async (to, subject, html) => {
+	const from = `Administrator 👻 <${EMAIL_ADMIN}>`;
 
-	static getInstance() {
-		if (this.instance) {
-			return this.instance;
-		}
+	await transporter.sendMail({ from, to, subject, html });
+};
 
-		this.instance = new MailService();
-		return this.instance;
-	}
-
-	sendEmail(from, to, subject, html) {
-		return this.transporter.sendMail({ from, to, subject, html });
-	}
-}
-
-module.exports = MailService;
+module.exports = { sendEmail };

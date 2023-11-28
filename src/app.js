@@ -8,8 +8,7 @@ const app = express();
 // packages
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
-const winston = require("winston"),
-	expressWinston = require("express-winston");
+const logger = require("./configs/logger.config");
 
 // error handler
 const notFoundMiddleware = require("./middleware/not-found");
@@ -27,24 +26,7 @@ app.use((req, res, next) => {
 app.use("/api", require("./routes"));
 
 // log internal errors
-app.use(
-	expressWinston.errorLogger({
-		transports: [
-			new winston.transports.File({
-				filename: "./src/logs/errors.log",
-			}),
-		],
-		format: winston.format.combine(
-			winston.format.timestamp({
-				format: new Date().toLocaleString("en-US", {
-					timeZone: "Asia/Ho_Chi_Minh",
-				}),
-			}),
-			winston.format.json(),
-			winston.format.prettyPrint()
-		),
-	})
-);
+app.use(logger);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
