@@ -1,4 +1,2 @@
-const { StatusCodes } = require("http-status-codes");
-const CustomError = require("../errors");
-
-module.exports = {};
+import { StatusCodes } from "http-status-codes";
+import CustomError from "../errors/index.js";

@@ -1,4 +1,4 @@
-const nodemailer = require("nodemailer");
+import nodemailer from "nodemailer";
 const { EMAIL_ADMIN, PASS_ADMIN } = process.env;
 
 const transport = {
@@ -25,4 +25,4 @@ const sendEmail = async (to, subject, html) => {
 	await transporter.sendMail({ from, to, subject, html });
 };
 
-module.exports = { sendEmail };
+export default { sendEmail };

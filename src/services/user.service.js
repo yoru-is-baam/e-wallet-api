@@ -1,6 +1,6 @@
-const { User } = require("../models");
-const CustomError = require("../errors");
-const { generateRandomString, generateUsername } = require("../utils");
+import { User } from "../models/index.js";
+import CustomError from "../errors/index.js";
+import { generateRandomString, generateUsername } from "../utils/index.js";
 
 /**
  * Create a user
@@ -130,7 +130,7 @@ const getUsers = async (filters) => {
 	return users;
 };
 
-module.exports = {
+export default {
 	createUser,
 	getUsers,
 	getUserById,

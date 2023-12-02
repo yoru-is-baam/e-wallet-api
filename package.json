@@ -1,6 +1,6 @@
 {
 	"name": "e-wallet",
-	"type": "commonjs",
+	"type": "module",
 	"version": "1.0.0",
 	"description": "",
 	"main": "./src/server.js",

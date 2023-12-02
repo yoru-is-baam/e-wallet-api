@@ -1,15 +1,15 @@
-const { User } = require("../models");
-const { mailService, userService, walletService } = require("../services");
-const {
+import { User } from "../models/index.js";
+import { mailService, userService, walletService } from "../services/index.js";
+import {
 	checkPermissions,
 	attachCookiesToResponse,
 	generateNumericalString,
-} = require("../utils");
+} from "../utils/index.js";
 
-const { StatusCodes } = require("http-status-codes");
-const CustomError = require("../errors");
+import { StatusCodes } from "http-status-codes";
+import CustomError from "../errors/index.js";
 
-const cloudinary = require("../configs/cloudinary.config");
+import cloudinary from "../configs/cloudinary.config.js";
 
 const getUsers = async (req, res) => {
 	const users = await userService.getUsers(req.query);
@@ -242,7 +242,7 @@ const removeID = async (req, res) => {
 	res.status(StatusCodes.OK).json({ status: "success", data: null });
 };
 
-module.exports = {
+export default {
 	getUsers,
 	getUser,
 	unlockBlockedAccount,

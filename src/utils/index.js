@@ -1,17 +1,15 @@
-const { createJWT, verifyToken } = require("./jwt");
-const {
+import { createJWT, verifyToken } from "./jwt.js";
+import {
 	generateUsername,
 	generateNumericalString,
 	generateRandomString,
-} = require("./generate-random-string");
-const createPayload = require("./create-payload");
-const createAdminAccount = require("./create-admin-account");
-const checkPermissions = require("./check-permissions");
-const attachCookiesToResponse = require("./create-response-cookie");
+} from "./generate-random-string.js";
+import createPayload from "./create-payload.js";
+import checkPermissions from "./check-permissions.js";
+import attachCookiesToResponse from "./create-response-cookie.js";
 
-module.exports = {
+export {
 	checkPermissions,
-	createAdminAccount,
 	createJWT,
 	verifyToken,
 	createPayload,

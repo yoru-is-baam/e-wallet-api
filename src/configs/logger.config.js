@@ -1,7 +1,7 @@
-const winston = require("winston"),
-	expressWinston = require("express-winston");
+import winston from "winston";
+import expressWinston from "express-winston";
 
-module.exports = expressWinston.errorLogger({
+export default expressWinston.errorLogger({
 	transports: [
 		new winston.transports.File({
 			filename: "./src/logs/errors.log",

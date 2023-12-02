@@ -1,17 +1,17 @@
-const {
+import { StatusCodes } from "http-status-codes";
+import {
 	userService,
 	walletService,
 	mailService,
 	authService,
-} = require("../services");
-const { StatusCodes } = require("http-status-codes");
-const CustomError = require("../errors");
-const {
+} from "../services/index.js";
+import CustomError from "../errors/index.js";
+import {
 	createJWT,
 	createPayload,
 	verifyToken,
 	attachCookiesToResponse,
-} = require("../utils");
+} from "../utils/index.js";
 
 const register = async (req, res) => {
 	const user = await userService.createUser(req.body);
@@ -113,4 +113,4 @@ const refreshToken = async (req, res) => {
 	}
 };
 
-module.exports = { register, login, logout, refreshToken };
+export default { register, login, logout, refreshToken };

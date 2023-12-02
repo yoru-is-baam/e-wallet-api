@@ -31,8 +31,4 @@ async function generateUsername(User) {
 	return username;
 }
 
-module.exports = {
-	generateUsername,
-	generateRandomString,
-	generateNumericalString,
-};
+export { generateUsername, generateRandomString, generateNumericalString };

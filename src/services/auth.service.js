@@ -1,5 +1,6 @@
-const userService = require("./user.service");
-const CustomError = require("../errors");
+import userService from "./user.service.js";
+import CustomError from "../errors/index.js";
+
 /**
  * Login with username and password
  * @param {string} username
@@ -53,4 +54,4 @@ const loginWithUsernameAndPassword = async (username, password) => {
 	return user;
 };
 
-module.exports = { loginWithUsernameAndPassword };
+export default { loginWithUsernameAndPassword };

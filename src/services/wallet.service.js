@@ -1,4 +1,4 @@
-const { Wallet } = require("../models");
+import { Wallet } from "../models/index.js";
 
 /**
  * Create a wallet
@@ -18,7 +18,7 @@ const getWalletByUserId = async (userId) => {
 	return Wallet.findOne({ userId });
 };
 
-module.exports = {
+export default {
 	createWallet,
 	getWalletByUserId,
 };

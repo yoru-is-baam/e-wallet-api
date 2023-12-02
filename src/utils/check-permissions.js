@@ -1,4 +1,4 @@
-const CustomError = require("../errors");
+import CustomError from "../errors/index.js";
 
 // Just user can view their profile, admin can view all
 const checkPermissions = (requestUser, resourceUserId) => {
@@ -11,4 +11,4 @@ const checkPermissions = (requestUser, resourceUserId) => {
 	);
 };
 
-module.exports = checkPermissions;
+export default checkPermissions;

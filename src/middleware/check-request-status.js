@@ -1,4 +1,4 @@
-const CustomError = require("../errors");
+import CustomError from "../errors/index.js";
 
 // Check route enter OTP, reset password
 const checkRequestStatus = (status) => async (req, res, next) => {
@@ -13,4 +13,4 @@ const checkRequestStatus = (status) => async (req, res, next) => {
 	next();
 };
 
-module.exports = checkRequestStatus;
+export default checkRequestStatus;

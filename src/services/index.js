@@ -1,4 +1,6 @@
-module.exports.userService = require("./user.service");
-module.exports.walletService = require("./wallet.service");
-module.exports.mailService = require("./mail.service");
-module.exports.authService = require("./auth.service");
+import userService from "./user.service.js";
+import walletService from "./wallet.service.js";
+import mailService from "./mail.service.js";
+import authService from "./auth.service.js";
+
+export { userService, walletService, mailService, authService };

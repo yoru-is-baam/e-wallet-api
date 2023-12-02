@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const { generateNumericalString } = require("../utils");
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
+import { generateNumericalString } from "../utils/index.js";
 
 const UserSchema = mongoose.Schema(
 	{
@@ -149,4 +149,4 @@ UserSchema.methods.restoreLoginStatus = async function () {
 	await this.save();
 };
 
-module.exports = mongoose.model("users", UserSchema);
+export default mongoose.model("users", UserSchema);

@@ -1,6 +1,6 @@
-const createAdminAccount = async () => {
-	const { User } = require("../models");
+import { User } from "../models/index.js";
 
+const createAdminAccount = async () => {
 	const user = await User.findOne({ username: "administrator" });
 
 	if (!user) {
@@ -14,4 +14,4 @@ const createAdminAccount = async () => {
 	}
 };
 
-module.exports = createAdminAccount;
+export default createAdminAccount;

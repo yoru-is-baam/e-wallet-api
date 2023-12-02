@@ -1,5 +1,5 @@
-const Joi = require("joi");
-const validationMiddleware = require("./validation");
+import Joi from "joi";
+import validationMiddleware from "./validation.js";
 
 const changePasswordSchema = Joi.object({
 	oldPassword: Joi.string().required().min(6).trim().strict(),
@@ -29,7 +29,7 @@ const resetPasswordPatchSchema = Joi.object({
 	newPassword: Joi.string().required().min(6).trim().strict(),
 });
 
-module.exports = {
+export default {
 	changePasswordValidationMiddleware:
 		validationMiddleware(changePasswordSchema),
 	resetPasswordPostValidationMiddleware: validationMiddleware(

@@ -1,8 +1,12 @@
-const express = require("express");
-const router = express.Router();
+import { Router } from "express";
+const router = Router();
 
-router.use("/v1/auth", require("./auth.route"));
-router.use("/v1/users", require("./user.route"));
-router.use("/v1/wallets", require("./wallet.route"));
+import AuthRouter from "./auth.route.js";
+import UserRouter from "./user.route.js";
+import WalletRouter from "./wallet.route.js";
 
-module.exports = router;
+router.use("/v1/auth", AuthRouter);
+router.use("/v1/users", UserRouter);
+router.use("/v1/wallets", WalletRouter);
+
+export default router;

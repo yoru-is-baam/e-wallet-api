@@ -13,4 +13,4 @@ const attachCookiesToResponse = ({ res, cookie }) => {
 	res.cookie(cookie.key, cookie.value, options);
 };
 
-module.exports = attachCookiesToResponse;
+export default attachCookiesToResponse;

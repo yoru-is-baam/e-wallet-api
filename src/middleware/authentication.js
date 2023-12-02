@@ -1,5 +1,5 @@
-const CustomError = require("../errors");
-const { verifyToken } = require("../utils");
+import CustomError from "../errors/index.js";
+import { verifyToken } from "../utils/index.js";
 
 const authenticateUser = async (req, res, next) => {
 	let accessToken;
@@ -60,8 +60,4 @@ const authenticateFirstLoginUser = (req, res, next) => {
 	next();
 };
 
-module.exports = {
-	authenticateUser,
-	authenticateFirstLoginUser,
-	authorizePermissions,
-};
+export { authenticateUser, authenticateFirstLoginUser, authorizePermissions };

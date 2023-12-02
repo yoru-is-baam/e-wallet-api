@@ -7,4 +7,4 @@ const createPayload = (user) => {
 	};
 };
 
-module.exports = createPayload;
+export default createPayload;

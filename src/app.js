@@ -1,18 +1,21 @@
-require("dotenv").config();
-require("express-async-errors");
+import "dotenv/config";
+import "express-async-errors";
 
 // express
-const express = require("express");
+import express from "express";
 const app = express();
 
+// routes
+import route from "./routes/index.js";
+
 // packages
-const morgan = require("morgan");
-const cookieParser = require("cookie-parser");
-const logger = require("./configs/logger.config");
+import morgan from "morgan";
+import cookieParser from "cookie-parser";
+import logger from "./configs/logger.config.js";
 
 // error handler
-const notFoundMiddleware = require("./middleware/not-found");
-const errorHandlerMiddleware = require("./middleware/error-handler");
+import notFoundMiddleware from "./middleware/not-found.js";
+import errorHandlerMiddleware from "./middleware/error-handler.js";
 
 app.use(morgan("dev"));
 app.use(express.json());
@@ -23,7 +26,7 @@ app.use((req, res, next) => {
 	next();
 });
 
-app.use("/api", require("./routes"));
+app.use("/api", route);
 
 // log internal errors
 app.use(logger);
@@ -31,4 +34,4 @@ app.use(logger);
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
-module.exports = app;
+export default app;

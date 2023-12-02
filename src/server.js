@@ -1,10 +1,10 @@
 // database
-const connectDB = require("./db/connect");
+import connectDB from "./db/connect.js";
 
 // create admin account default
-const { createAdminAccount } = require("./utils");
+import createAdminAccount from "./db/create-admin-account.js";
 
-const app = require("./app");
+import app from "./app.js";
 
 const port = process.env.PORT || 3000;
 

@@ -1,2 +1,4 @@
-module.exports.User = require("./user.model");
-module.exports.Wallet = require("./wallet.model");
+import User from "./user.model.js";
+import Wallet from "./wallet.model.js";
+
+export { User, Wallet };

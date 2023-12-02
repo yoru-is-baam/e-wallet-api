@@ -1,4 +1,4 @@
-const CustomError = require("../errors");
+import CustomError from "../errors/index.js";
 
 const validationMiddleware = (schema) => (req, res, next) => {
 	const { error, value } = schema.validate(req.body, {
@@ -17,4 +17,4 @@ const validationMiddleware = (schema) => (req, res, next) => {
 	}
 };
 
-module.exports = validationMiddleware;
+export default validationMiddleware;

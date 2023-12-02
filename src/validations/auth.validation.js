@@ -1,5 +1,5 @@
-const Joi = require("joi");
-const validationMiddleware = require("./validation");
+import Joi from "joi";
+import validationMiddleware from "./validation.js";
 
 const registerSchema = Joi.object({
 	email: Joi.string().required().email().trim().strict(),
@@ -51,7 +51,7 @@ const loginSchema = Joi.object({
 		}),
 });
 
-module.exports = {
+export default {
 	registerValidationMiddleware: validationMiddleware(registerSchema),
 	loginValidationMiddleware: validationMiddleware(loginSchema),
 };

@@ -1,10 +1,9 @@
-const CustomError = require("../errors");
+import CustomError from "../errors/index.js";
 
-const path = require("path");
-
-const multer = require("multer");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const cloudinary = require("./cloudinary.config");
+import path from "path";
+import multer from "multer";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "./cloudinary.config.js";
 
 const storage = new CloudinaryStorage({
 	cloudinary,
@@ -42,4 +41,4 @@ const multerUploader = multer({
 	},
 });
 
-module.exports = { multerUploader };
+export { multerUploader };

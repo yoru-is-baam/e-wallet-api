@@ -1,16 +1,16 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
 
-const UserController = require("../controllers/user.controller");
-const UserValidation = require("../validations/user.validation");
+import UserController from "../controllers/user.controller.js";
+import UserValidation from "../validations/user.validation.js";
 
-const { multerUploader } = require("../configs/multer.config");
+import { multerUploader } from "../configs/multer.config.js";
 
-const {
+import {
 	authenticateUser,
 	authorizePermissions,
-} = require("../middleware/authentication");
-const checkRequestStatus = require("../middleware/check-request-status");
+} from "../middleware/authentication.js";
+import checkRequestStatus from "../middleware/check-request-status.js";
 
 router
 	.route("/")
@@ -75,4 +75,4 @@ router.delete(
 	UserController.removeID
 );
 
-module.exports = router;
+export default router;
