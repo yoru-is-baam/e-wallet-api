@@ -9,11 +9,7 @@ const authenticateUser = async (req, res, next) => {
 	}
 
 	if (!accessToken) {
-		throw new CustomError.UnauthenticatedError(
-			"TokenError",
-			null,
-			"No access token found"
-		);
+		throw new CustomError.UnauthenticatedError("TokenError", null, "No access token found");
 	}
 
 	try {
@@ -21,22 +17,14 @@ const authenticateUser = async (req, res, next) => {
 		req.user = { name, userId, status, role };
 		next();
 	} catch (error) {
-		throw new CustomError.UnauthenticatedError(
-			"TokenExpiredError",
-			null,
-			"Invalid access token"
-		);
+		throw new CustomError.UnauthenticatedError("TokenExpiredError", null, "Invalid access token");
 	}
 };
 
 const authorizePermissions = (...roles) => {
 	return (req, res, next) => {
 		if (!roles.includes(req.user.role)) {
-			throw new CustomError.UnauthorizedError(
-				"PermissionError",
-				null,
-				"Unauthorized to access this route"
-			);
+			throw new CustomError.UnauthorizedError("PermissionError", null, "Unauthorized to access this route");
 		}
 		next();
 	};
@@ -52,9 +40,7 @@ const authenticateFirstLoginUser = (req, res, next) => {
 	} else if (status === "disabled") {
 		throw new CustomError.UnauthenticatedError("Your account is disabled");
 	} else if (status === "waiting update") {
-		throw new CustomError.UnauthenticatedError(
-			"Your account is waiting update"
-		);
+		throw new CustomError.UnauthenticatedError("Your account is waiting update");
 	}
 
 	next();

@@ -6,26 +6,14 @@ import UserValidation from "../validations/user.validation.js";
 
 import { multerUploader } from "../configs/multer.config.js";
 
-import {
-	authenticateUser,
-	authorizePermissions,
-} from "../middleware/authentication.js";
+import { authenticateUser, authorizePermissions } from "../middleware/authentication.js";
 import checkRequestStatus from "../middleware/check-request-status.js";
 
-router
-	.route("/")
-	.get(
-		[authenticateUser, authorizePermissions("admin")],
-		UserController.getUsers
-	);
+router.route("/").get([authenticateUser, authorizePermissions("admin")], UserController.getUsers);
 
 router.get("/:id", authenticateUser, UserController.getUser);
 
-router.patch(
-	"/activate",
-	[authenticateUser, authorizePermissions("admin")],
-	UserController.activateAccount
-);
+router.patch("/activate", [authenticateUser, authorizePermissions("admin")], UserController.activateAccount);
 
 router.patch(
 	"/unlock-blocked-account",
@@ -41,15 +29,9 @@ router.patch(
 
 router
 	.route("/reset-password")
-	.post(
-		UserValidation.resetPasswordPostValidationMiddleware,
-		UserController.resetPasswordPost
-	)
+	.post(UserValidation.resetPasswordPostValidationMiddleware, UserController.resetPasswordPost)
 	.patch(
-		[
-			checkRequestStatus("Reset password"),
-			UserValidation.resetPasswordPatchValidationMiddleware,
-		],
+		[checkRequestStatus("Reset password"), UserValidation.resetPasswordPatchValidationMiddleware],
 		UserController.resetPasswordPatch
 	);
 
@@ -64,15 +46,11 @@ router.patch(
 	authenticateUser,
 	multerUploader.fields([
 		{ name: "idFront", maxCount: 1 },
-		{ name: "idBack", maxCount: 1 },
+		{ name: "idBack", maxCount: 1 }
 	]),
 	UserController.updateID
 );
 
-router.delete(
-	"/remove-id",
-	[authenticateUser, authorizePermissions("admin")],
-	UserController.removeID
-);
+router.delete("/remove-id", [authenticateUser, authorizePermissions("admin")], UserController.removeID);
 
 export default router;

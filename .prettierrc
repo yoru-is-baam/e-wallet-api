@@ -1,0 +1,18 @@
+{
+	"arrowParens": "always",
+	"semi": true,
+	"trailingComma": "none",
+	"useTabs": true,
+	"tabWidth": 2,
+	"endOfLine": "auto",
+	"printWidth": 120,
+	"overrides": [
+		{
+			"files": "*.yaml",
+			"options": {
+				"tadWidth": 2,
+				"printWidth": 40
+			}
+		}
+	]
+}

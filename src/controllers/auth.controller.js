@@ -1,17 +1,7 @@
 import { StatusCodes } from "http-status-codes";
-import {
-	userService,
-	walletService,
-	mailService,
-	authService,
-} from "../services/index.js";
+import { userService, walletService, mailService, authService } from "../services/index.js";
 import CustomError from "../errors/index.js";
-import {
-	createJWT,
-	createPayload,
-	verifyToken,
-	attachCookiesToResponse,
-} from "../utils/index.js";
+import { createJWT, createPayload, verifyToken, attachCookiesToResponse } from "../utils/index.js";
 
 const register = async (req, res) => {
 	const user = await userService.createUser(req.body);
@@ -28,18 +18,13 @@ const register = async (req, res) => {
 	const payload = createPayload(user);
 	const accessToken = createJWT(payload, "accessToken");
 
-	res
-		.status(StatusCodes.CREATED)
-		.json({ status: "success", data: { user: payload, accessToken } });
+	res.status(StatusCodes.CREATED).json({ status: "success", data: { user: payload, accessToken } });
 };
 
 const login = async (req, res) => {
 	const { username, password } = req.body;
 
-	const user = await authService.loginWithUsernameAndPassword(
-		username,
-		password
-	);
+	const user = await authService.loginWithUsernameAndPassword(username, password);
 
 	// jwt & cookies
 	const payload = createPayload(user);
@@ -47,14 +32,12 @@ const login = async (req, res) => {
 	const refreshToken = createJWT(payload, "refreshToken");
 	attachCookiesToResponse({
 		res,
-		cookie: { key: "refreshToken", value: refreshToken },
+		cookie: { key: "refreshToken", value: refreshToken }
 	});
 
 	await userService.updateRefreshToken({ username }, refreshToken);
 
-	res
-		.status(StatusCodes.OK)
-		.json({ status: "success", data: { user: payload, accessToken } });
+	res.status(StatusCodes.OK).json({ status: "success", data: { user: payload, accessToken } });
 };
 
 const logout = async (req, res) => {
@@ -69,20 +52,12 @@ const logout = async (req, res) => {
 const refreshToken = async (req, res) => {
 	const refreshToken = req.signedCookies?.refreshToken;
 	if (!refreshToken) {
-		throw new CustomError.UnauthenticatedError(
-			"TokenError",
-			null,
-			"No refresh token found"
-		);
+		throw new CustomError.UnauthenticatedError("TokenError", null, "No refresh token found");
 	}
 
 	const isExisted = await userService.checkFieldExistence(refreshToken);
 	if (!isExisted) {
-		throw new CustomError.UnauthenticatedError(
-			"TokenError",
-			null,
-			"No user found with this refresh token"
-		);
+		throw new CustomError.UnauthenticatedError("TokenError", null, "No user found with this refresh token");
 	}
 
 	try {
@@ -92,24 +67,18 @@ const refreshToken = async (req, res) => {
 		const newRefreshToken = createJWT(payload, "refreshToken");
 		attachCookiesToResponse({
 			res,
-			cookie: { key: "refreshToken", value: newRefreshToken },
+			cookie: { key: "refreshToken", value: newRefreshToken }
 		});
 
 		await userService.updateRefreshToken({ refreshToken }, newRefreshToken);
 
-		res
-			.status(StatusCodes.OK)
-			.json({ status: "success", data: { accessToken: newAccessToken } });
+		res.status(StatusCodes.OK).json({ status: "success", data: { accessToken: newAccessToken } });
 	} catch (error) {
 		await userService.updateRefreshToken({ refreshToken }, null);
 
 		res.clearCookie("refreshToken");
 
-		throw new CustomError.UnauthenticatedError(
-			"TokenExpiredError",
-			null,
-			"Invalid refresh token"
-		);
+		throw new CustomError.UnauthenticatedError("TokenExpiredError", null, "Invalid refresh token");
 	}
 };
 

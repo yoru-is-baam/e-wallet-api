@@ -9,7 +9,7 @@ const createAdminAccount = async () => {
 			password: "123456",
 			status: "verified",
 			role: "admin",
-			otp: "000000",
+			otp: "000000"
 		});
 	}
 };

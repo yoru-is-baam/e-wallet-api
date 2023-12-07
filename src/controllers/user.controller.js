@@ -1,10 +1,6 @@
 import { User } from "../models/index.js";
 import { mailService, userService, walletService } from "../services/index.js";
-import {
-	checkPermissions,
-	attachCookiesToResponse,
-	generateNumericalString,
-} from "../utils/index.js";
+import { checkPermissions, attachCookiesToResponse, generateNumericalString } from "../utils/index.js";
 
 import { StatusCodes } from "http-status-codes";
 import CustomError from "../errors/index.js";
@@ -14,19 +10,13 @@ import cloudinary from "../configs/cloudinary.config.js";
 const getUsers = async (req, res) => {
 	const users = await userService.getUsers(req.query);
 
-	res
-		.status(StatusCodes.OK)
-		.json({ status: "success", data: { nbHits: users.length, users } });
+	res.status(StatusCodes.OK).json({ status: "success", data: { nbHits: users.length, users } });
 };
 
 const getUser = async (req, res) => {
 	let user = await userService.getUserById(req.params.id);
 	if (!user) {
-		throw new CustomError.NotFoundError(
-			"ValueError",
-			null,
-			"No user found with id: " + req.params.id
-		);
+		throw new CustomError.NotFoundError("ValueError", null, "No user found with id: " + req.params.id);
 	}
 
 	checkPermissions(req.user, user._id);
@@ -48,36 +38,24 @@ const unlockBlockedAccount = async (req, res) => {
 
 		res.status(StatusCodes.OK).json({
 			status: "success",
-			data: null,
+			data: null
 		});
 	} else {
-		throw new CustomError.NotFoundError(
-			"ValueError",
-			null,
-			"No user found with id: " + req.body.userId
-		);
+		throw new CustomError.NotFoundError("ValueError", null, "No user found with id: " + req.body.userId);
 	}
 };
 
 const activateAccount = async (req, res) => {
 	const { status } = req.body;
-	const user = await User.findByIdAndUpdate(
-		req.body.userId,
-		{ status },
-		{ runValidators: true }
-	);
+	const user = await User.findByIdAndUpdate(req.body.userId, { status }, { runValidators: true });
 
 	if (user) {
 		res.status(StatusCodes.OK).json({
 			status: "success",
-			data: null,
+			data: null
 		});
 	} else {
-		throw new CustomError.NotFoundError(
-			"ValueError",
-			null,
-			"No user found with id: " + req.body.userId
-		);
+		throw new CustomError.NotFoundError("ValueError", null, "No user found with id: " + req.body.userId);
 	}
 };
 
@@ -87,23 +65,18 @@ const resetPasswordPost = async (req, res) => {
 
 	if (!user) {
 		throw new CustomError.NotFoundError("ValidationError", {
-			email: "No email found",
+			email: "No email found"
 		});
 	}
 
 	if (user.profile.phone !== phone) {
 		throw new CustomError.NotFoundError("ValidationError", {
-			phone: "No phone number found",
+			phone: "No phone number found"
 		});
 	}
 
 	// send OTP
-	mailService.sendEmail(
-		`Administrator 👻 <${process.env.EMAIL_ADMIN}>`,
-		email,
-		"Your OTP ✔",
-		`<p>${user.otp}</p>`
-	);
+	mailService.sendEmail(`Administrator 👻 <${process.env.EMAIL_ADMIN}>`, email, "Your OTP ✔", `<p>${user.otp}</p>`);
 
 	const ONE_DAY = 1000 * 60 * 60 * 24;
 	attachCookiesToResponse({
@@ -111,8 +84,8 @@ const resetPasswordPost = async (req, res) => {
 		cookie: {
 			key: "user",
 			value: { email, status: "Enter OTP" },
-			lifetime: ONE_DAY,
-		},
+			lifetime: ONE_DAY
+		}
 	});
 
 	res.status(StatusCodes.OK).json({ status: "success", data: null });
@@ -124,16 +97,12 @@ const enterOTP = async (req, res) => {
 	const user = await User.findOne({ "profile.email": email });
 	// if true, meaning cookie was changed
 	if (!user) {
-		throw new CustomError.BadRequestError(
-			"ValueError",
-			null,
-			"Invalid credentials"
-		);
+		throw new CustomError.BadRequestError("ValueError", null, "Invalid credentials");
 	}
 
 	if (user.otp != req.body.otp) {
 		throw new CustomError.UnauthenticatedError("ValidationError", {
-			otp: "Wrong OTP",
+			otp: "Wrong OTP"
 		});
 	}
 
@@ -148,8 +117,8 @@ const enterOTP = async (req, res) => {
 		cookie: {
 			key: "user",
 			value: { email, status: "Reset password" },
-			lifetime: ONE_DAY,
-		},
+			lifetime: ONE_DAY
+		}
 	});
 
 	res.status(StatusCodes.OK).json({ status: "success", data: null });
@@ -162,11 +131,7 @@ const resetPasswordPatch = async (req, res) => {
 	const user = await User.findOne({ "profile.email": email });
 	// if true, meaning cookie was changed
 	if (!user) {
-		throw new CustomError.BadRequestError(
-			"ValueError",
-			null,
-			"Invalid credentials"
-		);
+		throw new CustomError.BadRequestError("ValueError", null, "Invalid credentials");
 	}
 
 	// update password
@@ -190,7 +155,7 @@ const changePassword = async (req, res) => {
 	const isPasswordCorrect = await user.comparePassword(oldPassword);
 	if (!isPasswordCorrect) {
 		throw new CustomError.UnauthenticatedError("ValidationError", {
-			oldPassword: "Wrong old password",
+			oldPassword: "Wrong old password"
 		});
 	}
 
@@ -200,7 +165,7 @@ const changePassword = async (req, res) => {
 
 	res.status(StatusCodes.OK).json({
 		status: "success",
-		data: null,
+		data: null
 	});
 };
 
@@ -211,25 +176,21 @@ const updateID = async (req, res) => {
 	if (!idFront || !idBack) {
 		Promise.all([
 			idFront?.[0] && cloudinary.uploader.destroy(idFront[0].filename),
-			idBack?.[0] && cloudinary.uploader.destroy(idBack[0].filename),
+			idBack?.[0] && cloudinary.uploader.destroy(idBack[0].filename)
 		]);
 
 		throw new CustomError.BadRequestError("ValidationError", {
 			idFront: "ID can not be empty",
-			idBack: "ID can not be empty",
+			idBack: "ID can not be empty"
 		});
 	}
 
 	const idPath = {
 		idFront: req.files.idFront[0].filename,
-		idBack: req.files.idBack[0].filename,
+		idBack: req.files.idBack[0].filename
 	};
 
-	await User.findByIdAndUpdate(
-		req.user.userId,
-		{ "profile.idPath": idPath },
-		{ new: true }
-	);
+	await User.findByIdAndUpdate(req.user.userId, { "profile.idPath": idPath }, { new: true });
 
 	res.status(StatusCodes.OK).json({ status: "success", data: null });
 };
@@ -252,5 +213,5 @@ export default {
 	enterOTP,
 	resetPasswordPatch,
 	updateID,
-	removeID,
+	removeID
 };
