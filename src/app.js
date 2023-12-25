@@ -13,9 +13,24 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import logger from "./configs/logger.config.js";
 
+// extra security packages
+import helmet from "helmet";
+import cors from "cors";
+import rateLimiter from "express-rate-limit";
+
 // error handler
 import notFoundMiddleware from "./middleware/not-found.js";
 import errorHandlerMiddleware from "./middleware/error-handler.js";
+
+app.set("trust proxy", 1);
+app.use(
+	rateLimiter({
+		windowMs: 15 * 60 * 1000, // 15 minutes
+		max: 100 // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+	})
+);
+app.use(helmet());
+app.use(cors());
 
 app.use(morgan("dev"));
 app.use(express.json());
