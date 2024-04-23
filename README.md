@@ -22,6 +22,10 @@ yarn install
 Running locally:
 
 ```bash
+# seed data admin
+yarn seed
+
+# run dev server
 yarn dev
 ```
 
@@ -30,8 +34,17 @@ yarn dev
 The environment variables can be found and modified in the .env file. They come with these default values:
 
 ```dotenv
-# URI of your local MongoDB or MongoDB Atlas
-MONGO_URI=mongodb://127.0.0.1:27017/e-wallet
+NODE_ENV=dev
+
+DEV_APP_PORT=3052
+DEV_DB_HOST=127.0.0.1
+DEV_DB_PORT=27017
+DEV_DB_NAME=walletDEV
+
+PROD_APP_PORT=3000
+PROD_DB_HOST=127.0.0.1
+PROD_DB_PORT=27017
+PROD_DB_NAME=walletPROD
 
 # JWT secret key and lifetime
 ACCESS_TOKEN_SECRET=thisisasamplesecret
@@ -42,11 +55,16 @@ REFRESH_TOKEN_LIFETIME=30 days
 COOKIE_SECRET=thisisasamplesecretcookie
 
 # Email sending
-EMAIL_ADMIN=email-admin
-PASS_ADMIN=code-password-admin
+SMTP_HOST=
+SMTP_POST=
+SMTP_USER=
+SMTP_PASS=
 
 # Cloudinary to store images
 CLOUD_NAME=cloud-name
 CLOUD_API_KEY=cloud-api-key
 CLOUD_API_SECRET=cloud-api-secret
+
+# Client url to send email reset password
+CLIENT_URL=
 ```

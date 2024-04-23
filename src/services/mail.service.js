@@ -1,28 +1,22 @@
 import nodemailer from "nodemailer";
-const { EMAIL_ADMIN, PASS_ADMIN } = process.env;
+import transport from "../configs/mail.config.js";
+import logger from "../loggers/winston.log.js";
 
-const transport = {
-	host: "smtp.gmail.com",
-	port: 465,
-	secure: true,
-	auth: {
-		user: EMAIL_ADMIN,
-		pass: PASS_ADMIN,
-	},
-};
-const transporter = nodemailer.createTransport(transport);
+class MailService {
+	constructor() {
+		this.transporter = nodemailer.createTransport(transport);
+	}
 
-/**
- * Send an email
- * @param {string} to
- * @param {string} subject
- * @param {string} html
- * @returns {Promise}
- */
-const sendEmail = async (to, subject, html) => {
-	const from = `Administrator 👻 <${EMAIL_ADMIN}>`;
+	sendMail = async (to, subject, html) => {
+		const from = `Administrator 👻 <${transport.auth.user}>`;
 
-	await transporter.sendMail({ from, to, subject, html });
-};
+		try {
+			await this.transporter.sendMail({ from, to, subject, html });
+		} catch (error) {
+			logger.error({ message: error.message, stack: error.stack });
+			console.error(error);
+		}
+	};
+}
 
-export default { sendEmail };
+export default new MailService();

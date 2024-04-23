@@ -1,140 +1,59 @@
+import { ROLE } from "../common/constants/index.js";
+import { BadRequestError } from "../common/responses/fail.response.js";
 import { User } from "../models/index.js";
-import CustomError from "../errors/index.js";
-import { generateRandomString, generateUsername } from "../utils/index.js";
+import UtilsService from "./utils.service.js";
 
-/**
- * Create a user
- * @param {Object} userBody
- * @returns {Promise<User>}
- */
-const createUser = async (userBody) => {
-	if (await checkFieldExistence({ email: userBody.email })) {
-		throw new CustomError.BadRequestError("ValidationError", {
-			email: "Email already exists",
-		});
-	}
+export default class UserService {
+	static createUser = async (createUserDto) => {
+		return await User.create(createUserDto);
+	};
 
-	if (await checkFieldExistence({ phone: userBody.phone })) {
-		throw new CustomError.BadRequestError("ValidationError", {
-			phone: "Phone number already exists",
-		});
-	}
+	static updateUser = async (userId, updateUserDto) => {
+		return await User.findByIdAndUpdate(userId, updateUserDto).lean();
+	};
 
-	// create user account
-	const username = await generateUsername(User);
-	const password = generateRandomString(6);
+	static findUser = async (fields, lean = false) => {
+		return await User.findOne(fields, { lean });
+	};
 
-	return User.create({
-		username,
-		password,
-		profile: userBody,
-	});
-};
+	static findUserById = async (userId, lean = false) => {
+		return await User.findById(userId, { lean });
+	};
 
-/**
- * Get user by id
- * @param {ObjectId} id
- * @returns {Promise<User>}
- */
-const getUserById = async (id) => {
-	return User.findById(id);
-};
+	static getUsers = async (filters) => {
+		const { status, sort, wrongCount, page = 1, limit = 10 } = filters;
 
-/**
- * Get user by username
- * @param {string} username
- * @returns {Promise<User>}
- */
-const getUserByUsername = async (username) => {
-	return User.findOne({ username });
-};
+		// just get user role
+		const fields = { role: ROLE.USER };
 
-/**
- * Check user existence by a specific field
- * @param {string} field
- * @returns {Promise<Boolean>}
- */
-const checkFieldExistence = async (field, excludeUserId) => {
-	const isExisted = await User.isFieldTaken(field, excludeUserId);
-	return isExisted;
-};
+		if (status) fields.status = status;
+		if (wrongCount) fields.wrongCount = wrongCount;
 
-// update fresh token
-const updateRefreshTokenByUsername = async (username, newRefreshToken) => {
-	await User.findOneAndUpdate({ username }, { refreshToken: newRefreshToken });
-};
+		let query = User.find(fields)
+			.select("-password -role -__v -refreshToken")
+			.lean();
 
-const updateRefreshTokenByOldRefreshToken = async (
-	oldRefreshToken,
-	newRefreshToken
-) => {
-	await User.findOneAndUpdate(
-		{ refreshToken: oldRefreshToken },
-		{ refreshToken: newRefreshToken }
-	);
-};
+		// sort options or default
+		query = UtilsService.sort(query, sort);
 
-const updateRefreshTokenStrategies = {
-	username: updateRefreshTokenByUsername,
-	refreshToken: updateRefreshTokenByOldRefreshToken,
-};
+		// pagination
+		query = UtilsService.paginate(query, page, limit);
 
-const updateRefreshToken = async (obj, newRefreshToken) => {
-	const [key, value] = Object.entries(obj)[0];
-	await updateRefreshTokenStrategies[key](value, newRefreshToken);
-};
+		const users = await query;
 
-/**
- * Get users with filters
- * @param {Object} filters - status, sort, wrongCount,....
- * @returns {Promise<User>}
- */
-const getUsers = async (filters) => {
-	const { status, sort, wrongCount, unusualLogin } = filters;
-	const filterObject = {};
+		return { total: users.length, page, size: limit, users };
+	};
 
-	if (status) {
-		filterObject.status = status;
-	}
+	static getProfile = async (userId) => {
+		const user = await User.findById(userId)
+			.select("email status phone name birth address idImages")
+			.lean();
 
-	if (wrongCount) {
-		filterObject.wrongCount = wrongCount;
-	}
+		if (!user)
+			throw new BadRequestError({
+				data: { userId: `No user found with ${userId}` },
+			});
 
-	if (unusualLogin) {
-		filterObject.unusualLogin = unusualLogin === "true" ? true : false;
-	}
-
-	// just get user
-	filterObject.role = "user";
-
-	let result = User.find(filterObject).select("-password -otp");
-
-	// sort (can re-use)
-	if (sort) {
-		const sortList = sort.split(",").join(" ");
-		result = result.sort(sortList);
-	} else {
-		result = result.sort("createdAt");
-	}
-
-	// pagination (can re-use)
-	const page = Number(filters.page) || 1;
-	const limit = Number(filters.limit) || 10;
-	const skip = (page - 1) * limit;
-
-	result = result.skip(skip).limit(limit);
-
-	const users = await result;
-
-	return users;
-};
-
-export default {
-	createUser,
-	getUsers,
-	getUserById,
-	getUserByUsername,
-	checkFieldExistence,
-	updateRefreshToken,
-};
+		return { user };
+	};
+}
