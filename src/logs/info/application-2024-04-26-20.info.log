@@ -1,0 +1,28 @@
+
+[2024-04-26 20:07:51] info: /api-docs - a5ac6018-c1ec-4876-8f5c-e1acbef7f90e
+Sent GET method
+{}
+
+[2024-04-26 20:07:51] info: /api-docs/ - 74003f87-bed8-4f53-a653-5436d97ed08b
+Sent GET method
+{}
+
+[2024-04-26 20:07:52] info: /api-docs/swagger-ui.css - 06adbe77-bfa0-4899-ad65-88bfeae76816
+Sent GET method
+{}
+
+[2024-04-26 20:07:52] info: /api-docs/swagger-ui-bundle.js - 9fd2bd4d-8778-4601-87d0-fb62b69d7959
+Sent GET method
+{}
+
+[2024-04-26 20:07:52] info: /api-docs/swagger-ui-standalone-preset.js - 2a6827c6-29af-4fdb-9680-aa46bc88617f
+Sent GET method
+{}
+
+[2024-04-26 20:07:52] info: /api-docs/swagger-ui-init.js - d251206b-41bf-4ec8-adc9-302502361609
+Sent GET method
+{}
+
+[2024-04-26 20:07:52] info: /api-docs/favicon-32x32.png - d47ac8cd-786c-473f-bcdb-7cdc3eb488ef
+Sent GET method
+{}

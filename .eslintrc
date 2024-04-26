@@ -25,6 +25,7 @@
 					{
 						"files": "*.yaml",
 						"options": {
+							"useTabs": false,
 							"tadWidth": 2,
 							"printWidth": 40
 						}

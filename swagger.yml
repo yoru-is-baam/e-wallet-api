@@ -1,0 +1,396 @@
+openapi: 3.0.3
+info:
+  title: E-wallet API
+  description: |-
+    A robust platform for simulating an e-wallet in real life.
+
+    Some useful links:
+    - [The E-wallet repository](https://github.com/yoru-is-baam/e-wallet-api)
+    - [The source API definition for the E-wallet](https://github.com/yoru-is-baam/e-wallet-api/blob/main/swagger.yml)
+  contact:
+    email: hoanghuynhtuankiet69@gmail.com
+  version: 1.0.11
+servers:
+  - url: http://localhost:3052/api/v1
+tags:
+  - name: users
+  - name: auth
+  - name: accounts
+paths:
+  /accounts/{id}/unblock:
+    patch:
+      tags:
+        - accounts
+      summary: Unblock an account
+      operationId: unblockAccount
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          $ref: "#/components/responses/204NoContent"
+  /accounts/{id}/activate:
+    patch:
+      tags:
+        - accounts
+      summary: Activate an account
+      operationId: activateAccount
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivateAccountDto"
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          $ref: "#/components/responses/204NoContent"
+
+  /users:
+    get:
+      tags:
+        - users
+      summary: Get all users
+      operationId: getUsers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          description: User status for filter
+          required: false
+          schema:
+            type: string
+            enum:
+              - verified
+              - updating
+              - disabled
+        - name: wrongCount
+          in: query
+          description: The number of wrong
+          required: false
+          schema:
+            type: number
+        - name: sort
+          in: query
+          description: Sort type using to sort all users
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number you want to view
+          required: false
+          schema:
+            type: number
+            default: 1
+        - name: limit
+          in: query
+          description: The number of users you want to view
+          required: false
+          schema:
+            type: number
+            default: 10
+      responses:
+        "200":
+          $ref: "#/components/responses/200OK"
+  /users/{id}:
+    get:
+      tags:
+        - users
+      summary: Get user profile
+      operationId: getUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          $ref: "#/components/responses/200OK"
+  /users/upload:
+    post:
+      tags:
+        - users
+      summary: Upload front and back ID
+      operationId: uploadID
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/UploadDto"
+      responses:
+        "200":
+          $ref: "#/components/responses/200OK"
+
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Log in the E-wallet
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginDto"
+      responses:
+        "200":
+          $ref: "#/components/responses/200OK"
+        "400":
+          $ref: "#/components/responses/400BadRequest"
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: Register an account
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterDto"
+      responses:
+        "201":
+          $ref: "#/components/responses/201Created"
+        "400":
+          $ref: "#/components/responses/400BadRequest"
+  /auth/logout:
+    post:
+      tags:
+        - auth
+      summary: Log out the E-wallet
+      security:
+        - bearerAuth: []
+      operationId: logout
+      responses:
+        "204":
+          $ref: "#/components/responses/204NoContent"
+        "401":
+          $ref: "#/components/responses/401Unauthorized"
+  /auth/refresh-token:
+    post:
+      tags:
+        - auth
+      summary: Get new access and refresh token
+      operationId: refreshToken
+      responses:
+        "200":
+          $ref: "#/components/responses/200OK"
+  /auth/change-password:
+    patch:
+      tags:
+        - auth
+      summary: Change into new password
+      security:
+        - bearerAuth: []
+      operationId: changePassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordDto"
+      responses:
+        "200":
+          $ref: "#/components/responses/200OK"
+  /auth/forgot-password:
+    post:
+      tags:
+        - auth
+      summary: Send password reset link
+      operationId: forgotPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordDto"
+      responses:
+        "200":
+          $ref: "#/components/responses/200OK"
+  /auth/reset-password:
+    patch:
+      tags:
+        - auth
+      summary: Reset with new password
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordDto"
+      responses:
+        "200":
+          $ref: "#/components/responses/200OK"
+components:
+  schemas:
+    SuccessfulResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          type: object
+    FailResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: fail
+        data:
+          type: object
+        message:
+          type: string
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: error
+        message:
+          type: string
+    RegisterDto:
+      required:
+        - email
+        - phone
+        - name
+        - birth
+        - address
+      type: object
+      properties:
+        email:
+          type: string
+        phone:
+          type: string
+        name:
+          type: string
+        birth:
+          type: string
+        address:
+          type: string
+    LoginDto:
+      required:
+        - email
+        - password
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    ChangePasswordDto:
+      required:
+        - oldPassword
+        - newPassword
+        - confirmPassword
+      type: object
+      properties:
+        oldPassword:
+          type: string
+        newPassword:
+          type: string
+        confirmPassword:
+          type: string
+    ForgotPasswordDto:
+      required:
+        - email
+        - phone
+      type: object
+      properties:
+        email:
+          type: string
+        phone:
+          type: string
+    ResetPasswordDto:
+      required:
+        - userId
+        - token
+        - newPassword
+        - confirmPassword
+      type: object
+      properties:
+        userId:
+          type: string
+          format: ObjectId
+        token:
+          type: string
+        newPassword:
+          type: string
+        confirmPassword:
+          type: string
+    UploadDto:
+      required:
+        - idFront
+        - idBack
+      type: object
+      properties:
+        idFront:
+          type: string
+          format: binary
+        idBack:
+          type: string
+          format: binary
+    ActivateAccountDto:
+      required:
+        - status
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - verified
+            - updating
+            - disabled
+    ObjectId:
+      type: string
+      format: ObjectId
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/ObjectId"
+  responses:
+    200OK:
+      description: Request successfully
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SuccessfulResponse"
+    201Created:
+      description: Created successfully
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SuccessfulResponse"
+    204NoContent:
+      description: No content
+    400BadRequest:
+      description: Invalid input value
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/FailResponse"
+    401Unauthorized:
+      description: Unauthenticated user
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/FailResponse"
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
