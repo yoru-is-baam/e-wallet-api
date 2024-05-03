@@ -48,27 +48,27 @@ export default class AuthService {
 		});
 
 		// SEND MAIL
-		// MailService.sendMail(
-		// 	registerDto.email,
-		// 	"Your password ✔",
-		// 	`<html>
-		// 		<body>
-		// 				<div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
-		// 						<div style="background-color: #f0f0f0; padding: 10px; text-align: center;">
-		// 								<h2>Your Password</h2>
-		// 						</div>
-		// 						<div style="padding: 20px;">
-		// 								<p>Dear ${user.name},</p>
-		// 								<p>Your password is: <strong>${password}</strong></p>
-		// 								<p>Please keep this password secure and do not share it with anyone.</p>
-		// 						</div>
-		// 						<div style="text-align: center; margin-top: 20px;">
-		// 								<p>If you did not request this password, please ignore this email.</p>
-		// 						</div>
-		// 				</div>
-		// 		</body>
-		// 	</html>`,
-		// );
+		MailService.sendMail(
+			registerDto.email,
+			"Your password ✔",
+			`<html>
+				<body>
+						<div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
+								<div style="background-color: #f0f0f0; padding: 10px; text-align: center;">
+										<h2>Your Password</h2>
+								</div>
+								<div style="padding: 20px;">
+										<p>Dear ${user.name},</p>
+										<p>Your password is: <strong>${password}</strong></p>
+										<p>Please keep this password secure and do not share it with anyone.</p>
+								</div>
+								<div style="text-align: center; margin-top: 20px;">
+										<p>If you did not request this password, please ignore this email.</p>
+								</div>
+						</div>
+				</body>
+			</html>`,
+		);
 
 		return { id: user._id };
 	};
@@ -208,7 +208,43 @@ export default class AuthService {
 
 		await TokenService.createToken(user._id, hashedToken);
 
-		return { userId: user._id, resetToken, name: user.name };
+		const passwordResetLink = `${process.env.CLIENT_URL}?token=${resetToken}&id=${user._id}`;
+
+		// SEND MAIL
+		MailService.sendMail(
+			email,
+			"Your password reset link ✔",
+			`<html>
+			<head>
+					<meta charset="UTF-8">
+					<meta name="viewport" content="width=device-width, initial-scale=1.0">
+					<title>Password Reset Email</title>
+					<style>
+							body { font-family: Arial, sans-serif; background-color: #f5f5f5; }
+							.container { max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #ccc; border-radius: 5px; }
+							.header { background-color: #f0f0f0; padding: 20px; text-align: center; border-bottom: 1px solid #ccc; }
+							.content { padding: 20px; color: #555555; }
+							.footer { padding: 20px; text-align: center; border-top: 1px solid #ccc; }
+							.button { display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; transition: background-color 0.3s; }
+							.button:hover { background-color: #0056b3; }
+					</style>
+			</head>
+			<body>
+					<div class="container">
+							<div class="header"><h2>Password Reset Link</h2></div>
+							<div class="content">
+									<p>Dear ${user.name},</p>
+									<p>A password reset request has been made for your account. Click the button below to reset your password:</p>
+									<p><a class="button" href="${passwordResetLink}" target="_blank">Reset Password</a></p>
+									<p>If you didn't request a password reset, please ignore this email.</p>
+							</div>
+							<div class="footer"><p>This email was sent automatically. Please do not reply.</p></div>
+					</div>
+			</body>
+			</html>`,
+		);
+
+		return { userId: user._id };
 	};
 
 	static resetPassword = async ({ userId, token, newPassword }) => {

@@ -1,4 +1,4 @@
-import { AuthService, MailService } from "../services/index.js";
+import { AuthService } from "../services/index.js";
 import {
 	CreatedResponse,
 	OkResponse,
@@ -59,48 +59,8 @@ export default class AuthController {
 	};
 
 	static forgotPassword = async (req, res, next) => {
-		const { userId, resetToken, name } = await AuthService.forgotPassword(
-			req.body,
-		);
-
-		const passwordResetLink = `${process.env.CLIENT_URL}?token=${resetToken}&id=${userId}`;
-
-		// SEND MAIL
-		MailService.sendMail(
-			req.body.email,
-			"Your password reset link ✔",
-			`<html>
-			<head>
-					<meta charset="UTF-8">
-					<meta name="viewport" content="width=device-width, initial-scale=1.0">
-					<title>Password Reset Email</title>
-					<style>
-							body { font-family: Arial, sans-serif; background-color: #f5f5f5; }
-							.container { max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; border: 1px solid #ccc; border-radius: 5px; }
-							.header { background-color: #f0f0f0; padding: 20px; text-align: center; border-bottom: 1px solid #ccc; }
-							.content { padding: 20px; color: #555555; }
-							.footer { padding: 20px; text-align: center; border-top: 1px solid #ccc; }
-							.button { display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; transition: background-color 0.3s; }
-							.button:hover { background-color: #0056b3; }
-					</style>
-			</head>
-			<body>
-					<div class="container">
-							<div class="header"><h2>Password Reset Link</h2></div>
-							<div class="content">
-									<p>Dear ${name},</p>
-									<p>A password reset request has been made for your account. Click the button below to reset your password:</p>
-									<p><a class="button" href="${passwordResetLink}" target="_blank">Reset Password</a></p>
-									<p>If you didn't request a password reset, please ignore this email.</p>
-							</div>
-							<div class="footer"><p>This email was sent automatically. Please do not reply.</p></div>
-					</div>
-			</body>
-			</html>`,
-		);
-
 		new OkResponse({
-			data: { userId },
+			data: await AuthService.forgotPassword(req.body),
 		}).send(res);
 	};
 

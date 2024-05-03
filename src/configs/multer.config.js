@@ -1,17 +1,7 @@
 import path from "path";
 import multer from "multer";
 
-import cloudinary from "./cloudinary.config.js";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { BadRequestError } from "../common/responses/fail.response.js";
-
-const cloudinaryStorage = new CloudinaryStorage({
-	cloudinary,
-	params: {
-		folder: (req, res) => `e-wallet/${req.user.userId}`,
-		format: "jpg",
-	},
-});
 
 const fileFilter = (req, file, callback) => {
 	let filetypes = /jpeg|jpg|png|gif|jfif/;
@@ -31,7 +21,7 @@ const fileFilter = (req, file, callback) => {
 };
 
 const multerUploader = multer({
-	storage: cloudinaryStorage,
+	dest: "./src/uploads",
 	fileFilter,
 	limits: {
 		fileSize: 1024 * 1024, // 1MB
